@@ -6,13 +6,16 @@
   <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
   <script type="text/javascript">
     $(document).ready(function(){
+      $('html').append('<div id="soundwebPlayer">Some Content</div>')
+      var player = $('#soundwebPlayer')
+      player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
       $('iframe').each(function(index, obj){
         $(obj).attr('id', index)
         
         var trackIdCapture = /api\.soundcloud\.com\/tracks\/(\d*)/;
         var match = trackIdCapture.exec($(obj).attr('src'));
         $(obj).data('soundcloudTrackId', match[1])
-        
+
         SC.Widget(index.toString()).bind(SC.Widget.Events.PLAY, function(){
           console.log(toString(this)+" was played")
         })
