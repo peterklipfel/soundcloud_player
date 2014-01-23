@@ -7,7 +7,7 @@
   <script type="text/javascript" src="js/api_key.js"></script>
   <script type="text/javascript">
     $(document).ready(function(){
-      $('html').append('<div id="soundwebPlayer"><div id="soundwebPlayerTrackName"></div><div id="soundwebPlayerArtist"></div></div>')
+      $('html').append('<div id="soundwebPlayer"><div id="soundwebPlayerArtwork"></div><div id="soundwebPlayerTrackName"></div><br><div id="soundwebPlayerArtist"></div></div>')
       var player = $('#soundwebPlayer')
       player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
       $('iframe').each(function(index, obj){
@@ -22,8 +22,15 @@
         }
 
       })
-      $.get("http://api.soundcloud.com/tracks/"+$('#0').data('soundcloudTrackId')+"?client_id="+SOUNDCLOUD_API_KEY, function(data) {
-        console.log(data);
+      $.get("http://api.soundcloud.com/tracks/"+$('#0').data('soundcloudTrackId')+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
+        $('#soundwebPlayerTrackName').append(data.title)
+        $('#soundwebPlayerArtwork').append("<img id='soundwebPlayerArtworkImage' src='"+data.artwork_url+"'>")
+        $('#soundwebPlayerTrackName').css('float', 'left')
+        $('#soundwebPlayerArtwork').css('float', 'left')
+        $('#soundwebPlayerArtworkImage').css({'width': '70px', 'height': '70px'})
+        $.get("http://api.soundcloud.com/users/"+data.user_id+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
+          $('#soundwebPlayerArtist').append(data.username)
+        })
       })
     })
   </script>
