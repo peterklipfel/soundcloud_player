@@ -1,11 +1,30 @@
-<!-- This is for acquiring and playing with stratus assets -->
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Stratus tester</title>
+  <title>Music</title>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+  <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $('iframe').each(function(index, obj){
+        $(obj).attr('id', index)
+        
+        var trackIdCapture = /api\.soundcloud\.com\/tracks\/(\d*)/;
+        var match = trackIdCapture.exec($(obj).attr('src'));
+        $(obj).data('soundcloudTrackId', match[1])
+        
+        SC.Widget(index.toString()).bind(SC.Widget.Events.PLAY, function(){
+          console.log(toString(this)+" was played")
+        })
+      })
+    })
+  </script>
 </head>
 <body>
   <h1>Let's play some music</h1>
+  <iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/125698166&amp;color=ff5500&amp;auto_play=false&amp;show_artwork=true"></iframe>
+  <iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/111655302&amp;color=ff5500&amp;auto_play=false&amp;show_artwork=true"></iframe>
+  <iframe width="100%" height="166" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/108327021&amp;color=62c170&amp;auto_play=false&amp;show_artwork=true"></iframe>
+  <iframe width="100%" height="450" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/20124366&amp;color=ff4200&amp;auto_play=false&amp;show_artwork=true"></iframe>
 </body>
 </html>
