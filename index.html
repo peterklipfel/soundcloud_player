@@ -4,21 +4,26 @@
   <title>Music</title>
   <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
   <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
+  <script type="text/javascript" src="js/api_key.js"></script>
   <script type="text/javascript">
     $(document).ready(function(){
-      $('html').append('<div id="soundwebPlayer">Some Content</div>')
+      $('html').append('<div id="soundwebPlayer"><div id="soundwebPlayerTrackName"></div><div id="soundwebPlayerArtist"></div></div>')
       var player = $('#soundwebPlayer')
       player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
       $('iframe').each(function(index, obj){
-        $(obj).attr('id', index)
-        
         var trackIdCapture = /api\.soundcloud\.com\/tracks\/(\d*)/;
         var match = trackIdCapture.exec($(obj).attr('src'));
-        $(obj).data('soundcloudTrackId', match[1])
+        if( typeof(match)!=="undefined" && match!==null ){
+          $(obj).attr('id', index)
+          $(obj).data('soundcloudTrackId', match[1])          
+          SC.Widget(index.toString()).bind(SC.Widget.Events.PLAY, function(){
+            console.log(toString(this)+" was played")
+          })
+        }
 
-        SC.Widget(index.toString()).bind(SC.Widget.Events.PLAY, function(){
-          console.log(toString(this)+" was played")
-        })
+      })
+      $.get("http://api.soundcloud.com/tracks/"+$('#0').data('soundcloudTrackId')+"?client_id="+SOUNDCLOUD_API_KEY, function(data) {
+        console.log(data);
       })
     })
   </script>
