@@ -21,6 +21,7 @@ var SWPlayer = {
       SWPlayer.state.playing = true
     })
     $('#soundwebPlayerPlay').click(function(){
+      console.log(SWPlayer.state)
       if(SWPlayer.state.playing){
         SC.Widget(SWPlayer.state.currentTrackId).pause()
         SWPlayer.state.playing = false
@@ -48,6 +49,8 @@ var SWPlayer = {
         SC.Widget(index.toString()).bind(SC.Widget.Events.PLAY, function(){
           console.log(this.swPlayerId)
           SWPlayer.setPlayerData(this.swPlayerId.toString())
+          SWPlayer.state.currentTrackId = this.swPlayerId.toString()
+          SWPlayer.state.playing = true
         })
         index = index+1
       }
