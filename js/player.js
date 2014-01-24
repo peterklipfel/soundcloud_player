@@ -1,11 +1,11 @@
 var SWPlayer = {
-  state : {currentTrackId : '0', playing : false},
+  state : {currentTrackId : 0, playing : false, trackList: []},
 
   build : function(){
     SWPlayer.buildBoilerPlate()
     SWPlayer.bindFrames()
     SWPlayer.bindPlayerClickHandlers()
-    SWPlayer.setPlayerData('0')
+    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackId])
   },
   
   buildBoilerPlate : function(){
@@ -16,49 +16,48 @@ var SWPlayer = {
 
   bindPlayerClickHandlers : function() {
     $('#soundwebPlayerPrev').click(function(){
-      SWPlayer.state.currentTrackId = (parseInt(SWPlayer.state.currentTrackId)-1).toString()
-      SC.Widget(SWPlayer.state.currentTrackId).play()
+      SWPlayer.state.currentTrackId = (SWPlayer.state.currentTrackId-1)%SWPlayer.state.trackList.length
+      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).play()
       SWPlayer.state.playing = true
     })
     $('#soundwebPlayerPlay').click(function(){
       console.log(SWPlayer.state)
       if(SWPlayer.state.playing){
-        SC.Widget(SWPlayer.state.currentTrackId).pause()
+        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).pause()
         SWPlayer.state.playing = false
       } else {
-        SC.Widget(SWPlayer.state.currentTrackId).play()
+        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).play()
         SWPlayer.state.playing = true
       }
     })
     $('#soundwebPlayerNext').click(function(){
-      SWPlayer.state.currentTrackId = (parseInt(SWPlayer.state.currentTrackId)+1).toString()
-      SC.Widget(SWPlayer.state.currentTrackId).play()
+      SWPlayer.state.currentTrackId = (SWPlayer.state.currentTrackId+1)%SWPlayer.state.trackList.length
+      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).play()
       SWPlayer.state.playing = true
     })
   },
 
   bindFrames : function() {
-    var index = 0
     $('iframe').each(function(i, obj){
       var trackIdCapture = /api\.soundcloud\.com\/tracks\/(\d*)/;
       var match = trackIdCapture.exec($(obj).attr('src'));
       if( typeof(match)!=="undefined" && match!==null ){
-        $(obj).attr('id', index)
         $(obj).data('soundcloudTrackId', match[1])
-        SC.Widget(index.toString()).swPlayerId = index
-        SC.Widget(index.toString()).bind(SC.Widget.Events.PLAY, function(){
-          console.log(this.swPlayerId)
+        $(obj).attr('id', match[1])
+        SWPlayer.state.trackList.push(match[1])
+        SC.Widget(match[1]).swPlayerId = match[1]
+        SC.Widget(match[1]).bind(SC.Widget.Events.PLAY, function(){
           SWPlayer.setPlayerData(this.swPlayerId.toString())
-          SWPlayer.state.currentTrackId = this.swPlayerId.toString()
+          SWPlayer.state.currentTrackId = SWPlayer.state.trackList.indexOf(this.swPlayerId)
           SWPlayer.state.playing = true
         })
-        index = index+1
       }
     })
   },
 
   setPlayerData : function(id){
-    $.get("http://api.soundcloud.com/tracks/"+$('#'+id).data('soundcloudTrackId')+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
+    console.log(id)
+    $.get("http://api.soundcloud.com/tracks/"+id+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
       $('#soundwebPlayerTrackName').empty().append(data.title)
       $('#soundwebPlayerArtwork').empty().append("<img id='soundwebPlayerArtworkImage' src='"+data.artwork_url+"'>")
       $('#soundwebPlayerTrackName').css('float', 'left')
