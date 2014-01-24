@@ -5,31 +5,24 @@ var SWPlayer = {
 
   },
 
-  build : function(){
-    SWPlayer.buildBoilerPlate()
-    SWPlayer.bindFrames()
-    SWPlayer.bindPlayerClickHandlers()
-    SWPlayer.bindPlayListHandlers(0)
-    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
-  },
-  
-  buildBoilerPlate : function(){
-    var html = '<div id="soundwebPlayer">'+
-                  '<div id="soundwebPlayerArtwork"></div>'+
-                  '<div id="soundwebPlayerTrackName"></div>'+
-                  '<br>'+
-                  '<div id="soundwebPlayerArtist"></div>'+
-                  '<div id="soundwebPlayerControls">'+
-                    '<span id="soundwebPlayerPrev">Prev</span>'+
-                    '<span id="soundwebPlayerPlay">Play</span>'+
-                    '<span id="soundwebPlayerNext">Next</span>'+
-                  '</div>'+
-                  '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
-                  '<div id=soundwebPlayerPlaylist></div>'+
-                '</div>'
-    $('html').append(html)
-    var player = $('#soundwebPlayer')
-    player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
+  bindFrames : function() {
+    $('iframe').each(function(i, obj){
+      var trackIdCapture = /api\.soundcloud\.com\/tracks\/(\d*)/;
+      var match = trackIdCapture.exec($(obj).attr('src'));
+      if( typeof(match)!=="undefined" && match!==null ){
+        $(obj).data('soundcloudTrackId', match[1])
+        $(obj).attr('id', match[1])
+        SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1]))
+        SC.Widget(match[1]).swPlayerId = match[1]
+        SC.Widget(match[1]).bind(SC.Widget.Events.PLAY, function(){
+          SWPlayer.setPlayerData(this.swPlayerId.toString())
+          var swPlayerId = this.swPlayerId
+          SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, swPlayerId, 'id')
+          console.log(SWPlayer.state.currentTrackNum)
+          SWPlayer.state.playing = true
+        })
+      }
+    })
   },
 
   bindPlayerClickHandlers : function() {
@@ -67,24 +60,32 @@ var SWPlayer = {
     })
   },
 
-  bindFrames : function() {
-    $('iframe').each(function(i, obj){
-      var trackIdCapture = /api\.soundcloud\.com\/tracks\/(\d*)/;
-      var match = trackIdCapture.exec($(obj).attr('src'));
-      if( typeof(match)!=="undefined" && match!==null ){
-        $(obj).data('soundcloudTrackId', match[1])
-        $(obj).attr('id', match[1])
-        SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1]))
-        SC.Widget(match[1]).swPlayerId = match[1]
-        SC.Widget(match[1]).bind(SC.Widget.Events.PLAY, function(){
-          SWPlayer.setPlayerData(this.swPlayerId.toString())
-          var swPlayerId = this.swPlayerId
-          SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, swPlayerId, 'id')
-          console.log(SWPlayer.state.currentTrackNum)
-          SWPlayer.state.playing = true
-        })
-      }
-    })
+  build : function(){
+    SWPlayer.buildBoilerPlate()
+    SWPlayer.bindFrames()
+    SWPlayer.bindPlayerClickHandlers()
+    // SWPlayer.buildPlayList()
+    SWPlayer.bindPlayListHandlers(0)
+    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
+  },
+
+  buildBoilerPlate : function(){
+    var html = '<div id="soundwebPlayer">'+
+                  '<div id="soundwebPlayerArtwork"></div>'+
+                  '<div id="soundwebPlayerTrackName"></div>'+
+                  '<br>'+
+                  '<div id="soundwebPlayerArtist"></div>'+
+                  '<div id="soundwebPlayerControls">'+
+                    '<span id="soundwebPlayerPrev">Prev</span>'+
+                    '<span id="soundwebPlayerPlay">Play</span>'+
+                    '<span id="soundwebPlayerNext">Next</span>'+
+                  '</div>'+
+                  '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
+                  '<div id=soundwebPlayerPlaylist></div>'+
+                '</div>'
+    $('html').append(html)
+    var player = $('#soundwebPlayer')
+    player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
   },
 
   soundcloudData : function(id){
