@@ -1,8 +1,9 @@
 var SWPlayer = {
   state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false},
 
-  addToPlaylist : function(id){
-
+  addToPlaylist : function(data){
+    console.log(data)
+    $('#soundwebPlayerPlaylist').append('<li>'+data.title+'</li>')
   },
 
   bindFrames : function() {
@@ -12,7 +13,7 @@ var SWPlayer = {
       if( typeof(match)!=="undefined" && match!==null ){
         $(obj).data('soundcloudTrackId', match[1])
         $(obj).attr('id', match[1])
-        SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1]))
+        SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1], SWPlayer.addToPlaylist))
         SC.Widget(match[1]).swPlayerId = match[1]
         SC.Widget(match[1]).bind(SC.Widget.Events.PLAY, function(){
           SWPlayer.setPlayerData(this.swPlayerId.toString())
@@ -54,7 +55,7 @@ var SWPlayer = {
         $('#soundwebPlayer').animate({'height': '70px'})
         SWPlayer.state.playlistUp = false
       } else {
-        $('#soundwebPlayer').animate({'height': $('soundwebPlayerPlaylist').height()+100})
+        $('#soundwebPlayer').animate({'height': ($('#soundwebPlayerPlaylist').height()+80).toString()+"px"})
         SWPlayer.state.playlistUp = true
       }
     })
@@ -64,7 +65,6 @@ var SWPlayer = {
     SWPlayer.buildBoilerPlate()
     SWPlayer.bindFrames()
     SWPlayer.bindPlayerClickHandlers()
-    // SWPlayer.buildPlayList()
     SWPlayer.bindPlayListHandlers(0)
     SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
   },
@@ -81,14 +81,14 @@ var SWPlayer = {
                     '<span id="soundwebPlayerNext">Next</span>'+
                   '</div>'+
                   '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
-                  '<div id=soundwebPlayerPlaylist></div>'+
+                  '<ul id=soundwebPlayerPlaylist></ul>'+
                 '</div>'
     $('html').append(html)
     var player = $('#soundwebPlayer')
     player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
   },
 
-  soundcloudData : function(id){
+  soundcloudData : function(id, callback){
     var blob = {id: id}
     $.get("http://api.soundcloud.com/tracks/"+id+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
       blob.title = data.title
@@ -96,6 +96,7 @@ var SWPlayer = {
       blob.stream_url = data.stream_url
       $.get("http://api.soundcloud.com/users/"+data.user_id+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
         blob.artist = data.username
+        callback(blob)
       })
     })
     return blob
