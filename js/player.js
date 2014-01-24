@@ -2,8 +2,19 @@ var SWPlayer = {
   state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false},
 
   addToPlaylist : function(data){
-    console.log(data)
-    $('#soundwebPlayerPlaylist').append('<li>'+data.title+'</li>')
+      console.log(data)
+    $('#soundwebPlayerPlaylist').append('<li id="playlist-'+data.id+'" data-soundcloud-track-id='+data.id+'>'+data.title+'</li>')
+    var playlistTrack = $('#playlist-'+data.id)
+    playlistTrack.click(function(){
+      SWPlayer.setPlayerData(data.id)
+      if(SWPlayer.state.playing){
+        SC.Widget(data.id).pause()
+        SWPlayer.state.playing = false
+      } else {
+        SC.Widget(data.id).play()
+        SWPlayer.state.playing = true
+      }
+    })
   },
 
   bindFrames : function() {
