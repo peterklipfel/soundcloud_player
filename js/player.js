@@ -1,12 +1,16 @@
 var SWPlayer = {
-  state : {currentTrackId : 0, playing : false, trackList: [], playlistUp : false},
+  state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false},
+
+  addToPlaylist : function(id){
+
+  },
 
   build : function(){
     SWPlayer.buildBoilerPlate()
     SWPlayer.bindFrames()
     SWPlayer.bindPlayerClickHandlers()
     SWPlayer.bindPlayListHandlers(0)
-    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackId])
+    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
   },
   
   buildBoilerPlate : function(){
@@ -30,23 +34,22 @@ var SWPlayer = {
 
   bindPlayerClickHandlers : function() {
     $('#soundwebPlayerPrev').click(function(){
-      SWPlayer.state.currentTrackId = (SWPlayer.state.currentTrackId-1)%SWPlayer.state.trackList.length
-      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).play()
+      SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum-1+SWPlayer.state.trackList.length)%SWPlayer.state.trackList.length
+      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
       SWPlayer.state.playing = true
     })
     $('#soundwebPlayerPlay').click(function(){
-      console.log(SWPlayer.state)
       if(SWPlayer.state.playing){
-        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).pause()
+        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).pause()
         SWPlayer.state.playing = false
       } else {
-        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).play()
+        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
         SWPlayer.state.playing = true
       }
     })
     $('#soundwebPlayerNext').click(function(){
-      SWPlayer.state.currentTrackId = (SWPlayer.state.currentTrackId+1)%SWPlayer.state.trackList.length
-      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackId]).play()
+      SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum+1)%SWPlayer.state.trackList.length
+      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
       SWPlayer.state.playing = true
     })
   },
@@ -71,19 +74,33 @@ var SWPlayer = {
       if( typeof(match)!=="undefined" && match!==null ){
         $(obj).data('soundcloudTrackId', match[1])
         $(obj).attr('id', match[1])
-        SWPlayer.state.trackList.push(match[1])
+        SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1]))
         SC.Widget(match[1]).swPlayerId = match[1]
         SC.Widget(match[1]).bind(SC.Widget.Events.PLAY, function(){
           SWPlayer.setPlayerData(this.swPlayerId.toString())
-          SWPlayer.state.currentTrackId = SWPlayer.state.trackList.indexOf(this.swPlayerId)
+          var swPlayerId = this.swPlayerId
+          SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, swPlayerId, 'id')
+          console.log(SWPlayer.state.currentTrackNum)
           SWPlayer.state.playing = true
         })
       }
     })
   },
 
+  soundcloudData : function(id){
+    var blob = {id: id}
+    $.get("http://api.soundcloud.com/tracks/"+id+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
+      blob.title = data.title
+      blob.artwork_url = data.artwork_url
+      blob.stream_url = data.stream_url
+      $.get("http://api.soundcloud.com/users/"+data.user_id+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
+        blob.artist = data.username
+      })
+    })
+    return blob
+  },
+
   setPlayerData : function(id){
-    console.log(id)
     $.get("http://api.soundcloud.com/tracks/"+id+".json?client_id="+SOUNDCLOUD_API_KEY, function(data) {
       $('#soundwebPlayerTrackName').empty().append(data.title)
       $('#soundwebPlayerArtwork').empty().append("<img id='soundwebPlayerArtworkImage' src='"+data.artwork_url+"'>")
@@ -95,4 +112,11 @@ var SWPlayer = {
       })
     })
   }
+}
+
+function arrayObjectIndexOf(myArray, searchTerm, property) {
+  for(var i = 0, len = myArray.length; i < len; i++) {
+    if (myArray[i][property] === searchTerm) return i;
+  }
+  return -1;
 }
