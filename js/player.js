@@ -1,18 +1,47 @@
 var SWPlayer = {
-  state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false},
+  state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false, currentPlaylistTrack: null},
 
   addToPlaylist : function(data){
-      console.log(data)
     $('#soundwebPlayerPlaylist').append('<li id="playlist-'+data.id+'" data-soundcloud-track-id='+data.id+'>'+data.title+'</li>')
     var playlistTrack = $('#playlist-'+data.id)
     playlistTrack.click(function(){
+      console.log(data.id)
       SWPlayer.setPlayerData(data.id)
-      if(SWPlayer.state.playing){
-        SC.Widget(data.id).pause()
-        SWPlayer.state.playing = false
+      if ($('#'+data.id).length) {
+        if(SWPlayer.state.playing){
+          SC.Widget(data.id).pause()
+          SWPlayer.state.playing = false
+        } else {
+          SC.Widget(data.id).play()
+          SWPlayer.state.playing = true
+        }
       } else {
-        SC.Widget(data.id).play()
-        SWPlayer.state.playing = true
+        SC.stream("/tracks/"+data.id, function(sound){
+          sound.play()
+          SWPlayer.state.playing = true
+          playlistTrack.unbind()
+          playlistTrack.click(function(){
+            if(SWPlayer.state.playing){
+              console.log('pausing sound')
+              sound.pause()
+              SWPlayer.state.playing = false
+            } else {
+              console.log('playing sound')
+              sound.play()
+              SWPlayer.state.playing = true
+            }
+          })
+          $('#soundwebPlayerPlay').unbind()
+          $('#soundwebPlayerPlay').click(function(){
+            if(SWPlayer.state.playing){
+              sound.pause()
+              SWPlayer.state.playing = false
+            } else {
+              sound.play()
+              SWPlayer.state.playing = true
+            }
+          })
+        });
       }
     })
   },
@@ -30,7 +59,6 @@ var SWPlayer = {
           SWPlayer.setPlayerData(this.swPlayerId.toString())
           var swPlayerId = this.swPlayerId
           SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, swPlayerId, 'id')
-          console.log(SWPlayer.state.currentTrackNum)
           SWPlayer.state.playing = true
         })
       }
@@ -53,6 +81,7 @@ var SWPlayer = {
       }
     })
     $('#soundwebPlayerNext').click(function(){
+      console.log(SWPlayer.state)
       SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum+1)%SWPlayer.state.trackList.length
       SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
       SWPlayer.state.playing = true
@@ -73,11 +102,13 @@ var SWPlayer = {
   },
 
   build : function(){
-    SWPlayer.buildBoilerPlate()
-    SWPlayer.bindFrames()
-    SWPlayer.bindPlayerClickHandlers()
-    SWPlayer.bindPlayListHandlers(0)
-    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
+    if (!$('#soundwebPlayer').length) {
+      SWPlayer.buildBoilerPlate()
+      SWPlayer.bindFrames()
+      SWPlayer.bindPlayerClickHandlers()
+      SWPlayer.bindPlayListHandlers(0)
+      SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
+    };
   },
 
   buildBoilerPlate : function(){
