@@ -1,11 +1,10 @@
 var SWPlayer = {
-  state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false, currentPlaylistTrack: null},
+  state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false},
 
   addToPlaylist : function(data){
     $('#soundwebPlayerPlaylist').append('<li id="playlist-'+data.id+'" data-soundcloud-track-id='+data.id+'>'+data.title+'</li>')
     var playlistTrack = $('#playlist-'+data.id)
     playlistTrack.click(function(){
-      console.log(data.id)
       SWPlayer.setPlayerData(data.id)
       if ($('#'+data.id).length) {
         if(SWPlayer.state.playing){
@@ -16,32 +15,7 @@ var SWPlayer = {
           SWPlayer.state.playing = true
         }
       } else {
-        SC.stream("/tracks/"+data.id, function(sound){
-          sound.play()
-          SWPlayer.state.playing = true
-          playlistTrack.unbind()
-          playlistTrack.click(function(){
-            if(SWPlayer.state.playing){
-              console.log('pausing sound')
-              sound.pause()
-              SWPlayer.state.playing = false
-            } else {
-              console.log('playing sound')
-              sound.play()
-              SWPlayer.state.playing = true
-            }
-          })
-          $('#soundwebPlayerPlay').unbind()
-          $('#soundwebPlayerPlay').click(function(){
-            if(SWPlayer.state.playing){
-              sound.pause()
-              SWPlayer.state.playing = false
-            } else {
-              sound.play()
-              SWPlayer.state.playing = true
-            }
-          })
-        });
+        SWPlayer.bindStreamToPlaylist(data)
       }
     })
   },
@@ -68,23 +42,18 @@ var SWPlayer = {
   bindPlayerClickHandlers : function() {
     $('#soundwebPlayerPrev').click(function(){
       SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum-1+SWPlayer.state.trackList.length)%SWPlayer.state.trackList.length
-      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
-      SWPlayer.state.playing = true
+      SWPlayer.playTrack()
     })
     $('#soundwebPlayerPlay').click(function(){
       if(SWPlayer.state.playing){
-        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).pause()
-        SWPlayer.state.playing = false
+        SWPlayer.pauseTrack()
       } else {
-        SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
-        SWPlayer.state.playing = true
+        SWPlayer.playTrack()
       }
     })
     $('#soundwebPlayerNext').click(function(){
-      console.log(SWPlayer.state)
       SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum+1)%SWPlayer.state.trackList.length
-      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
-      SWPlayer.state.playing = true
+      SWPlayer.playTrack()
     })
   },
 
@@ -99,6 +68,35 @@ var SWPlayer = {
         SWPlayer.state.playlistUp = true
       }
     })
+  },
+
+  bindStreamToPlaylist : function(data) {
+    SC.stream("/tracks/"+data.id, function(sound){
+      sound.play()
+      SWPlayer.state.playing = true
+      playlistTrack.unbind()
+      playlistTrack.click(function(){
+        if(SWPlayer.state.playing){
+          console.log('pausing sound')
+          sound.pause()
+          SWPlayer.state.playing = false
+        } else {
+          console.log('playing sound')
+          sound.play()
+          SWPlayer.state.playing = true
+        }
+      })
+      $('#soundwebPlayerPlay').unbind()
+      $('#soundwebPlayerPlay').click(function(){
+        if(SWPlayer.state.playing){
+          sound.pause()
+          SWPlayer.state.playing = false
+        } else {
+          sound.play()
+          SWPlayer.state.playing = true
+        }
+      })
+    });
   },
 
   build : function(){
@@ -128,6 +126,16 @@ var SWPlayer = {
     $('html').append(html)
     var player = $('#soundwebPlayer')
     player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
+  },
+
+  playTrack : function(){
+    SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
+    SWPlayer.state.playing = true
+  },
+
+  pauseTrack : function(){
+    SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).pause()
+    SWPlayer.state.playing = false
   },
 
   soundcloudData : function(id, callback){
