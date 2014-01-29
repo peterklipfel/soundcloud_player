@@ -6,21 +6,16 @@ var SWPlayer = {
     $('#soundwebPlayerPlaylist').append('<li id="playlist-'+data.id+'" data-soundcloud-track-id='+data.id+'>'+data.title+'</li>')
     var playlistTrack = $('#playlist-'+data.id)
     playlistTrack.click(function(){
+      if(SWPlayer.state.playing){
+        SWPlayer.pauseTrack()
+      }
       SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
       if (!$('#'+data.id).length) {
         SWPlayer.bindStreamTrack(function(){
-          if(SWPlayer.state.playing){
-            SWPlayer.pauseTrack()
-          } else {
-            SWPlayer.playTrack()
-          }
+          SWPlayer.playTrack()
         })
       } else {
-        if(SWPlayer.state.playing){
-          SWPlayer.pauseTrack()
-        } else {
-          SWPlayer.playTrack()
-        }
+        SWPlayer.playTrack()
       }
     })
   },
