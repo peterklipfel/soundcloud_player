@@ -88,39 +88,15 @@ var SWPlayer = {
 
   bindStreamTrack : function(callback) {
     SC.stream("/tracks/"+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id, function(sound){
-      // sound.play()
-      // SWPlayer.state.playing = true
       SWPlayer.state.streamtrack = sound
       callback()
-      // playlistTrack.unbind()
-      // playlistTrack.click(function(){
-      //   if(SWPlayer.state.playing){
-      //     console.log('pausing sound')
-      //     sound.pause()
-      //     SWPlayer.state.playing = false
-      //   } else {
-      //     console.log('playing sound')
-      //     sound.play()
-      //     SWPlayer.state.playing = true
-      //   }
-      // })
-      // $('#soundwebPlayerPlay').unbind()
-      // $('#soundwebPlayerPlay').click(function(){
-      //   if(SWPlayer.state.playing){
-      //     sound.pause()
-      //     SWPlayer.state.playing = false
-      //   } else {
-      //     sound.play()
-      //     SWPlayer.state.playing = true
-      //   }
-      // })
     });
   },
 
   build : function(){
     if (!$('#soundwebPlayer').length) {
-      SWPlayer.buildBoilerPlate()
-      SWPlayer.bindFrames()
+      SWPlayer.buildBoilerPlate();
+      SWPlayer.bindFrames();
       SWPlayer.bindPlayerClickHandlers()
       SWPlayer.bindPlayListHandlers(0)
       SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
@@ -143,7 +119,7 @@ var SWPlayer = {
                 '</div>'
     $('html').append(html)
     var player = $('#soundwebPlayer')
-    player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%'})
+    player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%', "z-index":"99999"})
   },
 
   playTrack : function(){
