@@ -7,12 +7,11 @@ var SWPlayer = {
     playlistTrack.click(function(){
       SWPlayer.setPlayerData(data.id)
       if ($('#'+data.id).length) {
+        SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
         if(SWPlayer.state.playing){
-          SC.Widget(data.id).pause()
-          SWPlayer.state.playing = false
+          SWPlayer.pauseTrack()
         } else {
-          SC.Widget(data.id).play()
-          SWPlayer.state.playing = true
+          SWPlayer.playTrack()
         }
       } else {
         SWPlayer.bindStreamToPlaylist(data)
