@@ -1,20 +1,26 @@
 var SWPlayer = {
-  state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false},
+  state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false, 
+           streaming : false, streamtrack: null},
 
   addToPlaylist : function(data){
     $('#soundwebPlayerPlaylist').append('<li id="playlist-'+data.id+'" data-soundcloud-track-id='+data.id+'>'+data.title+'</li>')
     var playlistTrack = $('#playlist-'+data.id)
     playlistTrack.click(function(){
-      SWPlayer.setPlayerData(data.id)
-      if ($('#'+data.id).length) {
-        SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
+      SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
+      if (!$('#'+data.id).length) {
+        SWPlayer.bindStreamTrack(function(){
+          if(SWPlayer.state.playing){
+            SWPlayer.pauseTrack()
+          } else {
+            SWPlayer.playTrack()
+          }
+        })
+      } else {
         if(SWPlayer.state.playing){
           SWPlayer.pauseTrack()
         } else {
           SWPlayer.playTrack()
         }
-      } else {
-        SWPlayer.bindStreamToPlaylist(data)
       }
     })
   },
@@ -40,8 +46,16 @@ var SWPlayer = {
 
   bindPlayerClickHandlers : function() {
     $('#soundwebPlayerPrev').click(function(){
+      SWPlayer.pauseTrack()
       SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum-1+SWPlayer.state.trackList.length)%SWPlayer.state.trackList.length
-      SWPlayer.playTrack()
+      if (!$('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
+        SWPlayer.bindStreamTrack(function(){
+          SWPlayer.playTrack()
+          SWPlayer.state.streaming = true
+        })
+      } else {
+        SWPlayer.playTrack()
+      }
     })
     $('#soundwebPlayerPlay').click(function(){
       if(SWPlayer.state.playing){
@@ -51,8 +65,16 @@ var SWPlayer = {
       }
     })
     $('#soundwebPlayerNext').click(function(){
+      SWPlayer.pauseTrack()
       SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum+1)%SWPlayer.state.trackList.length
-      SWPlayer.playTrack()
+      if (!$('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
+        SWPlayer.bindStreamTrack(function(){
+          SWPlayer.playTrack()
+          SWPlayer.state.streaming = true
+        })
+      } else {
+        SWPlayer.playTrack()
+      }
     })
   },
 
@@ -69,32 +91,34 @@ var SWPlayer = {
     })
   },
 
-  bindStreamToPlaylist : function(data) {
-    SC.stream("/tracks/"+data.id, function(sound){
-      sound.play()
-      SWPlayer.state.playing = true
-      playlistTrack.unbind()
-      playlistTrack.click(function(){
-        if(SWPlayer.state.playing){
-          console.log('pausing sound')
-          sound.pause()
-          SWPlayer.state.playing = false
-        } else {
-          console.log('playing sound')
-          sound.play()
-          SWPlayer.state.playing = true
-        }
-      })
-      $('#soundwebPlayerPlay').unbind()
-      $('#soundwebPlayerPlay').click(function(){
-        if(SWPlayer.state.playing){
-          sound.pause()
-          SWPlayer.state.playing = false
-        } else {
-          sound.play()
-          SWPlayer.state.playing = true
-        }
-      })
+  bindStreamTrack : function(callback) {
+    SC.stream("/tracks/"+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id, function(sound){
+      // sound.play()
+      // SWPlayer.state.playing = true
+      SWPlayer.state.streamtrack = sound
+      callback()
+      // playlistTrack.unbind()
+      // playlistTrack.click(function(){
+      //   if(SWPlayer.state.playing){
+      //     console.log('pausing sound')
+      //     sound.pause()
+      //     SWPlayer.state.playing = false
+      //   } else {
+      //     console.log('playing sound')
+      //     sound.play()
+      //     SWPlayer.state.playing = true
+      //   }
+      // })
+      // $('#soundwebPlayerPlay').unbind()
+      // $('#soundwebPlayerPlay').click(function(){
+      //   if(SWPlayer.state.playing){
+      //     sound.pause()
+      //     SWPlayer.state.playing = false
+      //   } else {
+      //     sound.play()
+      //     SWPlayer.state.playing = true
+      //   }
+      // })
     });
   },
 
@@ -128,13 +152,29 @@ var SWPlayer = {
   },
 
   playTrack : function(){
-    SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
     SWPlayer.state.playing = true
+    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
+    if ($('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
+      if (SWPlayer.state.streaming) {
+        SWPlayer.state.streamtrack.pause()
+      }
+      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
+      SWPlayer.state.streaming = false
+    } else  {
+      SWPlayer.state.streamtrack.play()
+      SWPlayer.state.streaming = true
+    }
   },
 
   pauseTrack : function(){
-    SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).pause()
     SWPlayer.state.playing = false
+    if ($('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
+      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).pause()
+      SWPlayer.state.streaming = false
+    } else {
+      SWPlayer.state.streamtrack.pause()
+      SWPlayer.state.streaming = true
+    }
   },
 
   soundcloudData : function(id, callback){
