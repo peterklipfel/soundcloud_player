@@ -116,6 +116,7 @@ var SWPlayer = {
   playTrack : function(){
     SWPlayer.state.playing = true
     SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
+    $("div[data-soundcloud-track-id="+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id+"]").addClass('playing')
     SWPlayer.state.currentStreamtrack.play({whileplaying: function(){
       $('#soundwebPlayerTime').text(msToTime(this.position))
     }})
@@ -123,6 +124,7 @@ var SWPlayer = {
 
   pauseTrack : function(){
     SWPlayer.state.playing = false
+    $("div[data-soundcloud-track-id="+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id+"]").removeClass('playing')
     SWPlayer.state.currentStreamtrack.pause()
     SWPlayer.state.streaming = true
   },
