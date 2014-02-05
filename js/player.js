@@ -112,7 +112,7 @@ var SWPlayer = {
                   '</div>'+
                   '<div id=soundwebPlayerTimePlayed style="position: absolute; top: 10px; left: 15%; height:20px; background-color:#e3e3e3;"></div>'+
                   '<div id=soundwebPlayerPositionContainer style="position: absolute; top: 10px; left: 25%; height:20px; background-color:#e3e3e3; width: 50%">'+
-                    '<div id=soundwebPlayerPosition style="height:22px; background-color:#7e7e7e"></div>'+
+                    '<div id=soundwebPlayerPosition style="height:22px; background-color:#7e7e7e; margin-top:-1px"></div>'+
                   '</div>'+
                   '<div id=soundwebPlayerTimeLeft style="position: absolute; top: 10px; right: 15%; height:20px; background-color:#e3e3e3;"></div>'+
                   '<div id=soundwebPlayerShowPlaylist style="position: absolute; top: 50px; right: 50px; height:20px;">Show/Hide Playlist</div>'+
