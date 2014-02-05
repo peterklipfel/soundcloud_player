@@ -53,6 +53,12 @@ var SWPlayer = {
         SWPlayer.state.streaming = true
       })
     })
+
+    $('#soundwebPlayerPositionContainer').click(function(e){
+      var msOffset=(e.offsetX/$('#soundwebPlayerPositionContainer').width())*SWPlayer.state.currentStreamtrack.durationEstimate
+      console.log(msOffset)
+      SWPlayer.state.currentStreamtrack.setPosition(msOffset)
+    })
   },
 
   bindPlayListHandlers : function() {
@@ -104,10 +110,12 @@ var SWPlayer = {
                     '<span id="soundwebPlayerPlay">Play</span>'+
                     '<span id="soundwebPlayerNext">Next</span>'+
                   '</div>'+
-                  '<div id=soundwebPlayerTime style="position: absolute; top: 50%; left: 25%; height:20px; background-color:#e3e3e3; width: 50%">'+
-                    '<div id=soundwebPlayerPosition style="height:22px; background-color:#7e7e7e"></div>'
+                  '<div id=soundwebPlayerTimePlayed style="position: absolute; top: 10px; left: 15%; height:20px; background-color:#e3e3e3;"></div>'+
+                  '<div id=soundwebPlayerPositionContainer style="position: absolute; top: 10px; left: 25%; height:20px; background-color:#e3e3e3; width: 50%">'+
+                    '<div id=soundwebPlayerPosition style="height:22px; background-color:#7e7e7e"></div>'+
                   '</div>'+
-                  '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
+                  '<div id=soundwebPlayerTimeLeft style="position: absolute; top: 10px; right: 15%; height:20px; background-color:#e3e3e3;"></div>'+
+                  '<div id=soundwebPlayerShowPlaylist style="position: absolute; top: 50px; right: 50px; height:20px;">Show/Hide Playlist</div>'+
                   '<ul id=soundwebPlayerPlaylist></ul>'+
                 '</div>'
     $('body').append(html)
@@ -123,7 +131,10 @@ var SWPlayer = {
       $("div[data-soundcloud-track-id="+trackId+"]").addClass('playing')
     }
     SWPlayer.state.currentStreamtrack.play({whileplaying: function(){
-      $('#soundwebPlayerPosition').width( (this.position/this.duration)*$('#soundwebPlayerTime').width() )
+      console.log(this.durationEstimateEstimate)
+      $('#soundwebPlayerPosition').width( (this.position/this.durationEstimate)*$('#soundwebPlayerPositionContainer').width() )
+      $('#soundwebPlayerTimePlayed').text(msToTime(this.position))
+      $('#soundwebPlayerTimeLeft').text("-"+msToTime(this.position-this.durationEstimate))
     }})
   },
 
@@ -196,5 +207,5 @@ function msToTime(s) {
   var mins = s % 60;
   var hrs = (s - mins) / 60;
 
-  return hrs + ':' + mins + ':' + secs + '.' + ms;
+  return hrs + ':' + mins + ':' + secs;
 }
