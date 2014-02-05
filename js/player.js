@@ -104,7 +104,9 @@ var SWPlayer = {
                     '<span id="soundwebPlayerPlay">Play</span>'+
                     '<span id="soundwebPlayerNext">Next</span>'+
                   '</div>'+
-                  '<div id=soundwebPlayerTime style="position: absolute; top: 50%; left: 50%;"></div>'+
+                  '<div id=soundwebPlayerTime style="position: absolute; top: 50%; left: 25%; height:20px; background-color:#e3e3e3; width: 50%">'+
+                    '<div id=soundwebPlayerPosition style="height:22px; background-color:#7e7e7e"></div>'
+                  '</div>'+
                   '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
                   '<ul id=soundwebPlayerPlaylist></ul>'+
                 '</div>'
@@ -121,7 +123,7 @@ var SWPlayer = {
       $("div[data-soundcloud-track-id="+trackId+"]").addClass('playing')
     }
     SWPlayer.state.currentStreamtrack.play({whileplaying: function(){
-      $('#soundwebPlayerTime').text(msToTime(this.position))
+      $('#soundwebPlayerPosition').width( (this.position/this.duration)*$('#soundwebPlayerTime').width() )
     }})
   },
 
