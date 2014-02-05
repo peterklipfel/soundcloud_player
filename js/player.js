@@ -1,18 +1,25 @@
 var SWPlayer = {
   state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false, 
-           streaming : false, streamtrack: null},
+           streaming : false, currentStreamtrack: null},
 
   addToPlaylist : function(data){
     $('#soundwebPlayerPlaylist').append('<li id="playlist-'+data.id+'" data-soundcloud-track-id='+data.id+'>'+data.title+'</li>')
     var playlistTrack = $('#playlist-'+data.id)
     playlistTrack.click(function(){
+      var wasPlaying = SWPlayer.state.playing
       if(SWPlayer.state.playing){
         SWPlayer.pauseTrack()
       }
-      SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
-      SWPlayer.bindStreamTrack(function(){
-        SWPlayer.playTrack()
-      })
+      if (SWPlayer.state.currentTrackNum==arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id')) {
+        if(!wasPlaying){
+          SWPlayer.playTrack()
+        }
+      } else {
+        SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
+        SWPlayer.bindStreamTrack(function(){
+          SWPlayer.playTrack()
+        })
+      }
     })
   },
 
@@ -75,12 +82,17 @@ var SWPlayer = {
   },
 
   bindStreamTrack : function(callback) {
-    console.log(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
-    SC.stream("/tracks/"+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id, function(sound){
-      console.log(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum])
-      SWPlayer.state.streamtrack = sound
+    if(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].stream==null){
+      SC.stream("/tracks/"+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id, function(sound){
+        console.log(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum])
+        SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].stream = sound
+        SWPlayer.state.currentStreamtrack = sound
+        callback()
+      });
+    } else {
+      SWPlayer.state.currentStreamtrack = SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].stream
       callback()
-    });
+    }
   },
 
   build : function(){
@@ -115,12 +127,12 @@ var SWPlayer = {
   playTrack : function(){
     SWPlayer.state.playing = true
     SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
-    SWPlayer.state.streamtrack.play()
+    SWPlayer.state.currentStreamtrack.play()
   },
 
   pauseTrack : function(){
     SWPlayer.state.playing = false
-    SWPlayer.state.streamtrack.pause()
+    SWPlayer.state.currentStreamtrack.pause()
     SWPlayer.state.streaming = true
   },
 
