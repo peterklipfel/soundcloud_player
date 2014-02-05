@@ -1,4 +1,5 @@
 var SWPlayer = {
+  config: { useCustomStyles: false},
   state : {currentTrackNum : 0, playing : false, trackList: [], playlistUp : false, 
            streaming : false, currentStreamtrack: null},
 
@@ -8,6 +9,16 @@ var SWPlayer = {
     playlistTrack.click(function(){
       SWPlayer.togglePlayPause(data.id)
     })
+  },
+
+  applyStyles : function(){
+    var player = $('#soundwebPlayer')
+    player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%', "z-index":"99999"})
+    $('#soundwebPlayerTimePlayed').css({"position": "absolute", "top": "10px", "left": "15%", "height":"20px", "background-color":"#e3e3e3"})
+    $('#soundwebPlayerPositionContainer').css({"position": "absolute", "top": "10px", "left": "25%", "height":"20px", "background-color":"#e3e3e3", "width": "50%"})
+    $('#soundwebPlayerPosition').css({"height":"22px", "background-color":"#7e7e7e", "margin-top":"-1px"})
+    $('#soundwebPlayerTimeLeft').css({"position": "absolute", "top": "10px", "right": "15%", "height":"20px", "background-color":"#e3e3e3"})
+    $('#soundwebPlayerPlaylist').css({"position": "absolute", "top": "50px", "right": "50px", "height":"20px"})
   },
 
   bindFrames : function() {
@@ -88,9 +99,18 @@ var SWPlayer = {
     }
   },
 
-  build : function(){
+  build : function(config){
     if (!$('#soundwebPlayer').length) {
+      var totalConfig = SWPlayer.config
+      for (var attrname in config) { totalConfig[attrname] = config[attrname] }
+      SWPlayer.config = totalConfig
+
+      console.log(SWPlayer.config)
+
       SWPlayer.buildBoilerPlate();
+      if (!SWPlayer.config.useCustomStyles) {
+        SWPlayer.applyStyles()
+      }
       SWPlayer.bindFrames();
       SWPlayer.bindPlayerClickHandlers()
       SWPlayer.bindPlayListHandlers(0)
@@ -110,17 +130,15 @@ var SWPlayer = {
                     '<span id="soundwebPlayerPlay">Play</span>'+
                     '<span id="soundwebPlayerNext">Next</span>'+
                   '</div>'+
-                  '<div id=soundwebPlayerTimePlayed style="position: absolute; top: 10px; left: 15%; height:20px; background-color:#e3e3e3;"></div>'+
-                  '<div id=soundwebPlayerPositionContainer style="position: absolute; top: 10px; left: 25%; height:20px; background-color:#e3e3e3; width: 50%">'+
-                    '<div id=soundwebPlayerPosition style="height:22px; background-color:#7e7e7e; margin-top:-1px"></div>'+
+                  '<div id=soundwebPlayerTimePlayed></div>'+
+                  '<div id=soundwebPlayerPositionContainer>'+
+                    '<div id=soundwebPlayerPosition></div>'+
                   '</div>'+
-                  '<div id=soundwebPlayerTimeLeft style="position: absolute; top: 10px; right: 15%; height:20px; background-color:#e3e3e3;"></div>'+
-                  '<div id=soundwebPlayerShowPlaylist style="position: absolute; top: 50px; right: 50px; height:20px;">Show/Hide Playlist</div>'+
+                  '<div id=soundwebPlayerTimeLeft></div>'+
+                  '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
                   '<ul id=soundwebPlayerPlaylist></ul>'+
                 '</div>'
     $('body').append(html)
-    var player = $('#soundwebPlayer')
-    player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%', "z-index":"99999"})
   },
 
   playTrack : function(){
