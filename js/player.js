@@ -6,20 +6,7 @@ var SWPlayer = {
     $('#soundwebPlayerPlaylist').append('<li id="playlist-'+data.id+'" data-soundcloud-track-id='+data.id+'>'+data.title+'</li>')
     var playlistTrack = $('#playlist-'+data.id)
     playlistTrack.click(function(){
-      var wasPlaying = SWPlayer.state.playing
-      if(SWPlayer.state.playing){
-        SWPlayer.pauseTrack()
-      }
-      if (SWPlayer.state.currentTrackNum==arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id')) {
-        if(!wasPlaying){
-          SWPlayer.playTrack()
-        }
-      } else {
-        SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
-        SWPlayer.bindStreamTrack(function(){
-          SWPlayer.playTrack()
-        })
-      }
+      SWPlayer.togglePlayPause(data.id)
     })
   },
 
@@ -31,12 +18,12 @@ var SWPlayer = {
         $(obj).data('soundcloudTrackId', match[1])
         $(obj).attr('id', match[1])
         SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1], SWPlayer.addToPlaylist))
-        SC.Widget(match[1]).swPlayerId = match[1]
-        SC.Widget(match[1]).bind(SC.Widget.Events.PLAY, function(){
-          SWPlayer.setPlayerData(this.swPlayerId.toString())
-          var swPlayerId = this.swPlayerId
-          SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, swPlayerId, 'id')
-          SWPlayer.state.playing = true
+        var playButton = '<div data-soundcloud-track-id="'+match[1]+'">Play</div>'
+        $(obj).replaceWith(playButton)
+        $("div[data-soundcloud-track-id="+match[1]+"]").click(function(){
+          console.log($(this).data('soundcloud-track-id'))
+          SWPlayer.setPlayerData($(this).data('soundcloud-track-id'))
+          SWPlayer.togglePlayPause($(this).data('soundcloud-track-id').toString())
         })
       }
     })
@@ -102,6 +89,7 @@ var SWPlayer = {
       SWPlayer.bindPlayerClickHandlers()
       SWPlayer.bindPlayListHandlers(0)
       SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
+      SWPlayer.bindStreamTrack(function() {console.log('ready')})
     };
   },
 
@@ -116,6 +104,7 @@ var SWPlayer = {
                     '<span id="soundwebPlayerPlay">Play</span>'+
                     '<span id="soundwebPlayerNext">Next</span>'+
                   '</div>'+
+                  '<div id=soundwebPlayerTime style="position: absolute; top: 50%; left: 50%;"></div>'+
                   '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
                   '<ul id=soundwebPlayerPlaylist></ul>'+
                 '</div>'
@@ -127,7 +116,9 @@ var SWPlayer = {
   playTrack : function(){
     SWPlayer.state.playing = true
     SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
-    SWPlayer.state.currentStreamtrack.play()
+    SWPlayer.state.currentStreamtrack.play({whileplaying: function(){
+      $('#soundwebPlayerTime').text(msToTime(this.position))
+    }})
   },
 
   pauseTrack : function(){
@@ -161,6 +152,23 @@ var SWPlayer = {
         $('#soundwebPlayerArtist').empty().append(data.username)
       })
     })
+  },
+
+  togglePlayPause : function(id){
+    var wasPlaying = SWPlayer.state.playing
+    if(SWPlayer.state.playing){
+      SWPlayer.pauseTrack()
+    }
+    if (SWPlayer.state.currentTrackNum==arrayObjectIndexOf(SWPlayer.state.trackList, id, 'id')) {
+      if(!wasPlaying){
+        SWPlayer.playTrack()
+      }
+    } else {
+      SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, id, 'id') 
+      SWPlayer.bindStreamTrack(function(){
+        SWPlayer.playTrack()
+      })
+    }
   }
 }
 
@@ -169,4 +177,15 @@ function arrayObjectIndexOf(myArray, searchTerm, property) {
     if (myArray[i][property] === searchTerm) return i;
   }
   return -1;
+}
+
+function msToTime(s) {
+  var ms = s % 1000;
+  s = (s - ms) / 1000;
+  var secs = s % 60;
+  s = (s - secs) / 60;
+  var mins = s % 60;
+  var hrs = (s - mins) / 60;
+
+  return hrs + ':' + mins + ':' + secs + '.' + ms;
 }
