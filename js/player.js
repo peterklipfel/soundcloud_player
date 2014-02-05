@@ -10,13 +10,9 @@ var SWPlayer = {
         SWPlayer.pauseTrack()
       }
       SWPlayer.state.currentTrackNum = arrayObjectIndexOf(SWPlayer.state.trackList, data.id, 'id') 
-      if (!$('#'+data.id).length) {
-        SWPlayer.bindStreamTrack(function(){
-          SWPlayer.playTrack()
-        })
-      } else {
+      SWPlayer.bindStreamTrack(function(){
         SWPlayer.playTrack()
-      }
+      })
     })
   },
 
@@ -43,14 +39,10 @@ var SWPlayer = {
     $('#soundwebPlayerPrev').click(function(){
       SWPlayer.pauseTrack()
       SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum-1+SWPlayer.state.trackList.length)%SWPlayer.state.trackList.length
-      if (!$('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
-        SWPlayer.bindStreamTrack(function(){
-          SWPlayer.playTrack()
-          SWPlayer.state.streaming = true
-        })
-      } else {
+      SWPlayer.bindStreamTrack(function(){
         SWPlayer.playTrack()
-      }
+        SWPlayer.state.streaming = true
+      })
     })
     $('#soundwebPlayerPlay').click(function(){
       if(SWPlayer.state.playing){
@@ -62,14 +54,10 @@ var SWPlayer = {
     $('#soundwebPlayerNext').click(function(){
       SWPlayer.pauseTrack()
       SWPlayer.state.currentTrackNum = (SWPlayer.state.currentTrackNum+1)%SWPlayer.state.trackList.length
-      if (!$('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
-        SWPlayer.bindStreamTrack(function(){
-          SWPlayer.playTrack()
-          SWPlayer.state.streaming = true
-        })
-      } else {
+      SWPlayer.bindStreamTrack(function(){
         SWPlayer.playTrack()
-      }
+        SWPlayer.state.streaming = true
+      })
     })
   },
 
@@ -87,7 +75,9 @@ var SWPlayer = {
   },
 
   bindStreamTrack : function(callback) {
+    console.log(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
     SC.stream("/tracks/"+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id, function(sound){
+      console.log(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum])
       SWPlayer.state.streamtrack = sound
       callback()
     });
@@ -117,7 +107,7 @@ var SWPlayer = {
                   '<div id=soundwebPlayerShowPlaylist>Show/Hide Playlist</div>'+
                   '<ul id=soundwebPlayerPlaylist></ul>'+
                 '</div>'
-    $('html').append(html)
+    $('body').append(html)
     var player = $('#soundwebPlayer')
     player.css({'background-color': '#f3f3f3', 'height': '70px', 'position': 'fixed', 'bottom': '0', 'width': '100%', "z-index":"99999"})
   },
@@ -125,27 +115,13 @@ var SWPlayer = {
   playTrack : function(){
     SWPlayer.state.playing = true
     SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
-    if ($('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
-      if (SWPlayer.state.streaming) {
-        SWPlayer.state.streamtrack.pause()
-      }
-      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).play()
-      SWPlayer.state.streaming = false
-    } else  {
-      SWPlayer.state.streamtrack.play()
-      SWPlayer.state.streaming = true
-    }
+    SWPlayer.state.streamtrack.play()
   },
 
   pauseTrack : function(){
     SWPlayer.state.playing = false
-    if ($('#'+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).length) {
-      SC.Widget(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id).pause()
-      SWPlayer.state.streaming = false
-    } else {
-      SWPlayer.state.streamtrack.pause()
-      SWPlayer.state.streaming = true
-    }
+    SWPlayer.state.streamtrack.pause()
+    SWPlayer.state.streaming = true
   },
 
   soundcloudData : function(id, callback){
