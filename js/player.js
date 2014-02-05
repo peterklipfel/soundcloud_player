@@ -115,8 +115,11 @@ var SWPlayer = {
 
   playTrack : function(){
     SWPlayer.state.playing = true
-    SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
-    $("div[data-soundcloud-track-id="+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id+"]").addClass('playing')
+    var trackId = SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id
+    SWPlayer.setPlayerData(trackId)
+    if ($("div[data-soundcloud-track-id="+trackId+"]").length){
+      $("div[data-soundcloud-track-id="+trackId+"]").addClass('playing')
+    }
     SWPlayer.state.currentStreamtrack.play({whileplaying: function(){
       $('#soundwebPlayerTime').text(msToTime(this.position))
     }})
@@ -124,7 +127,9 @@ var SWPlayer = {
 
   pauseTrack : function(){
     SWPlayer.state.playing = false
-    $("div[data-soundcloud-track-id="+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id+"]").removeClass('playing')
+    if ($("div[data-soundcloud-track-id="+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id+"]").length){
+      $("div[data-soundcloud-track-id="+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id+"]").removeClass('playing')
+    }
     SWPlayer.state.currentStreamtrack.pause()
     SWPlayer.state.streaming = true
   },
