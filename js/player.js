@@ -26,16 +26,16 @@ var SWPlayer = {
       var trackIdCapture = /api\.soundcloud\.com\/tracks\/(\d*)/;
       var match = trackIdCapture.exec($(obj).attr('src'));
       if( typeof(match)!=="undefined" && match!==null ){
-        $(obj).data('soundcloudTrackId', match[1])
-        $(obj).attr('id', match[1])
-        SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1], SWPlayer.addToPlaylist))
-        var playButton = '<div data-soundcloud-track-id="'+match[1]+'">Play</div>'
-        $(obj).replaceWith(playButton)
-        $("div[data-soundcloud-track-id="+match[1]+"]").click(function(){
-          console.log($(this).data('soundcloud-track-id'))
-          SWPlayer.setPlayerData($(this).data('soundcloud-track-id'))
-          SWPlayer.togglePlayPause($(this).data('soundcloud-track-id').toString())
-        })
+        if($(obj).data('soundcloud-track-id') === undefined){
+          $(obj).attr('id', match[1])
+          SWPlayer.state.trackList.push(SWPlayer.soundcloudData(match[1], SWPlayer.addToPlaylist))
+          var playButton = '<div data-soundcloud-track-id="'+match[1]+'">Play</div>'
+          $(obj).replaceWith(playButton)
+          $("div[data-soundcloud-track-id="+match[1]+"]").click(function(){
+            SWPlayer.setPlayerData($(this).data('soundcloud-track-id'))
+            SWPlayer.togglePlayPause($(this).data('soundcloud-track-id').toString())
+          })
+        }
       }
     })
   },
@@ -67,7 +67,6 @@ var SWPlayer = {
 
     $('#soundwebPlayerPositionContainer').click(function(e){
       var msOffset=(e.offsetX/$('#soundwebPlayerPositionContainer').width())*SWPlayer.state.currentStreamtrack.durationEstimate
-      console.log(msOffset)
       SWPlayer.state.currentStreamtrack.setPosition(msOffset)
     })
   },
@@ -88,7 +87,6 @@ var SWPlayer = {
   bindStreamTrack : function(callback) {
     if(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].stream==null){
       SC.stream("/tracks/"+SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id, function(sound){
-        console.log(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum])
         SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].stream = sound
         SWPlayer.state.currentStreamtrack = sound
         callback()
@@ -104,9 +102,6 @@ var SWPlayer = {
       var totalConfig = SWPlayer.config
       for (var attrname in config) { totalConfig[attrname] = config[attrname] }
       SWPlayer.config = totalConfig
-
-      console.log(SWPlayer.config)
-
       SWPlayer.buildBoilerPlate();
       if (!SWPlayer.config.useCustomStyles) {
         SWPlayer.applyStyles()
@@ -114,7 +109,7 @@ var SWPlayer = {
       SWPlayer.bindFrames();
       if (SWPlayer.state.trackList !== []) {
         SWPlayer.bindPlayerClickHandlers()
-        SWPlayer.bindPlayListHandlers(0)
+        SWPlayer.bindPlayListHandlers()
         SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
         SWPlayer.bindStreamTrack(function() {console.log('ready')})
         $('#soundwebPlayer').show()
@@ -152,7 +147,6 @@ var SWPlayer = {
       $("div[data-soundcloud-track-id="+trackId+"]").addClass('playing')
     }
     SWPlayer.state.currentStreamtrack.play({whileplaying: function(){
-      console.log(this.durationEstimateEstimate)
       $('#soundwebPlayerPosition').width( (this.position/this.durationEstimate)*$('#soundwebPlayerPositionContainer').width() )
       $('#soundwebPlayerTimePlayed').text(msToTime(this.position))
       $('#soundwebPlayerTimeLeft').text("-"+msToTime(this.position-this.durationEstimate))
