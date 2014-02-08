@@ -112,15 +112,18 @@ var SWPlayer = {
         SWPlayer.applyStyles()
       }
       SWPlayer.bindFrames();
-      SWPlayer.bindPlayerClickHandlers()
-      SWPlayer.bindPlayListHandlers(0)
-      SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
-      SWPlayer.bindStreamTrack(function() {console.log('ready')})
+      if (SWPlayer.state.trackList !== []) {
+        SWPlayer.bindPlayerClickHandlers()
+        SWPlayer.bindPlayListHandlers(0)
+        SWPlayer.setPlayerData(SWPlayer.state.trackList[SWPlayer.state.currentTrackNum].id)
+        SWPlayer.bindStreamTrack(function() {console.log('ready')})
+        $('#soundwebPlayer').show()
+      };
     };
   },
 
   buildBoilerPlate : function(){
-    var html = '<div id="soundwebPlayer">'+
+    var html = '<div id="soundwebPlayer" style="display:none">'+
                   '<div id="soundwebPlayerArtwork"></div>'+
                   '<div id="soundwebPlayerTrackName"></div>'+
                   '<br>'+
